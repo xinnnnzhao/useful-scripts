@@ -1,0 +1,142 @@
+Basically, about our system info:
+cat /proc/version
+Linux version 5.3.0-28-generic (buildd@lcy01-amd64-009) (gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1)) #30~18.04.1-Ubuntu SMP Fri Jan 17 06:14:09 UTC 2020
+安装一：
+Install systemtap first. It could be tough by installing it from source code. 
+sudo apt-get  install systemtap systemtap-client systemtap-common systemtap-runtime systemtap-server -y
+Install dependent packages:
+sudo apt-get  install gcc
+sudo apt-get  install elfutils
+sudo apt-get  install linux-headers-generic
+Then install kernal-debug-info, which could be downloaded by 'http://ddebs.ubuntu.com/pool/main/l/linux/‘
+This provide symbol table of system kernal , which could provide more power for systemtap.
+sudo dpkg -i linux-image-unsigned-4.15.0-87-generic-dbgsym_4.15.0-87.87_amd64.ddeb
+To confirm if it works:
+sudo stap -e 'probe begin { printf("Hello, World!\n"); exit() }'
+https://www.jianshu.com/p/84b3885aa8cb
+https://blog.csdn.net/zhangskd/article/details/25708441
+https://wiki.ubuntu.com/Kernel/Systemtap#Where_to_get_debug_symbols_for_kernel_X.3F
+https://wiki.ubuntu.com/Kernel/Systemtap#Where_to_get_debug_symbols_for_kernel_X.3F
+https://sourceware.org/git/gitweb.cgi?p=systemtap.git;a=summary
+安装二：
+Well, it did not work by above methods. Since the systemtap from apt-get is for Debian Systems. In Ubuntu, it may not work. So, we still need to install it from source codes. And this works.
+sudo apt remove systemtap
+sudo apt install g++ make git libelf-dev libdw-dev
+git clone git://sourceware.org/git/systemtap.git
+cd systemtap/
+./configure && make         // no errors
+sudo make install
+sudo stap -e 'probe begin { printf("Hello, World!\n"); exit() }'
+[sudo] password for xin: 
+Hello, World!
+ https://askubuntu.com/questions/1173904/is-systemtap-broken-on-5-0-0-kernel
+
+
+About how to use it:
+https://sourceware.org/systemtap/examples/
+https://my.oschina.net/hanhanztj/blog/478862
+https://sourceware.org/systemtap/SystemTap_Beginners_Guide/
+1. stap [options] FILE // Run script in file
+2. stap [options] -e SCRIPT // Run given script.
+3. stap [options] -l PROBE // List matching probes.
+4. stap [options] -L PROBE // List matching probes and local variables.
+Options:
+1. -o FILE：output results to a specific file. 
+2. -x bing to a process.
+3. -T time out
+
+Systemstap 语法：
+prob event {statement}
+events include system_call, file_operation, kernal_function, begin, end, timer_triger etc…
+
+Examples:
+sudo stap hugepage_split.stp -T1
+#! /usr/bin/env stap
+probe kernel.function("split_huge_page")
+{
+  printf("%-25s: %s (%d) split_huge_page",
+    ctime(gettimeofday_s()), execname(), pid())
+}
+
+sudo stap  alloc_small_page.stp
+#! /usr/bin/env stap
+
+global execname="raytrace-numall"
+global total_count=0
+global total_cycles=0
+global current_cycle=0
+probe kernel.function("alloc_pages_vma")
+{ 
+  if(execname()==execname){
+    total_count+=1
+    current_cycle = get_cycles()
+   // printf("%ld: %s (%d) alloc_huge_page\n", current_cycle, execname(), pid())
+  }
+  //total_count+=1
+  //current_cycle = get_cycles()
+  //printf("%ld: %s (%d) alloc_huge_page\n", current_cycle, execname(), pid())
+}
+
+probe kernel.function("alloc_pages_vma").return
+{
+  if(execname()==execname){
+    total_cycles += get_cycles() - current_cycle
+  }
+  //total_cycles += get_cycles() - current_cycle
+ // printf("%ld: %ld: %s (%d) alloc_huge_page_return\n", current_cycle, get_cycles(), execname(), pid())
+}
+
+probe kernel.function("alloc_pages_current")
+{
+  if(execname()==execname){
+    total_count+=1
+    current_cycle = get_cycles()
+   // printf("%ld: %s (%d) alloc_huge_page\n", current_cycle, execname(), pid())
+  }
+  //total_count+=1
+  //current_cycle = get_cycles()
+  //printf("%ld: %s (%d) alloc_huge_page\n", current_cycle, execname(), pid())
+}
+
+probe kernel.function("alloc_pages_current").return
+{
+  if(execname()==execname){
+    total_cycles += get_cycles() - current_cycle
+  }
+  //total_cycles += get_cycles() - current_cycle
+ // printf("%ld: %ld: %s (%d) alloc_huge_page_return\n", current_cycle, get_cycles(), execname(), pid())
+}
+
+
+probe end
+{
+  printf("end")
+  printf("total_count:%ld\n",total_count)
+  printf("total_cycles:%ld\n",total_cycles)
+}
+
+sudo stap hugepage_split.stp
+#! /usr/bin/env stap
+  
+global total_count=0
+global total_cycles=0
+global current_cycle=0
+probe kernel.function("alloc_huge_page")
+{
+  total_count+=1
+  current_cycle = get_cycles()
+  //printf("%ld: %s (%d) alloc_huge_page\n", get_cycles(), execname(), pid())
+}
+
+probe kernel.function("alloc_huge_page").return
+{
+  total_cycles += get_cycles() - current_cycle
+  //printf("%ld: %s (%d) alloc_huge_page_return\n", get_cycles(), execname(), pid())
+}
+
+probe end
+{
+  printf("end")
+  printf("total_count:%ld\n",total_count)
+  printf("total_cycles:%ld\n",total_cycles)
+}

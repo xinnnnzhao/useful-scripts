@@ -1,0 +1,25 @@
+#! /usr/bin/env stap
+
+global total_count=0
+global total_cycles=0
+global current_cycle=0
+probe kernel.function("get_page_from_freelist")
+{
+  total_count+=1
+  current_cycle = get_cycles()
+  printf("%ld: %s (%d) get_page_from_freelist\n", current_cycle, execname(), pid())
+}
+
+probe kernel.function("get_page_from_freelist").return
+{
+  total_cycles += get_cycles() - current_cycle
+  //printf("%ld: %ld: %s (%d) get_page_from_freelist\n", current_cycle, get_cycles(), execname(), pid())
+}
+
+probe end
+{
+  printf("end")
+  printf("total_count:%ld\n",total_count)
+  printf("total_cycles:%ld\n",total_cycles)
+}
+

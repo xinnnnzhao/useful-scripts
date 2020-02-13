@@ -1,0 +1,25 @@
+#! /usr/bin/env stap
+
+global total_count=0
+global total_cycles=0
+global current_cycle=0
+probe kernel.function("alloc_huge_page")
+{
+  total_count+=1
+  current_cycle = get_cycles()
+  //printf("%ld: %s (%d) alloc_huge_page\n", current_cycle, execname(), pid())
+}
+
+probe kernel.function("alloc_huge_page").return
+{
+  total_cycles += get_cycles() - current_cycle
+ // printf("%ld: %ld: %s (%d) alloc_huge_page_return\n", current_cycle, get_cycles(), execname(), pid())
+}
+
+probe end
+{
+  printf("end")
+  printf("total_count:%ld\n",total_count)
+  printf("total_cycles:%ld\n",total_cycles)
+}
+

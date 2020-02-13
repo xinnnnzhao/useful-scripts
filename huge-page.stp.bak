@@ -1,0 +1,83 @@
+#! /usr/bin/env stap
+
+probe kernel.function("split_huge_page")
+{
+  printf("%-25s: %s (%d) split_huge_page\n",
+  ctime(gettimeofday_s()), execname(), pid())
+}
+
+probe kernel.function("collapse_huge_page")
+{
+  printf("%-25s: %s (%d) collapse_huge_page\n",
+    ctime(gettimeofday_s()), execname(), pid())
+}
+
+//probe kernel.function("alloc_huge_page")
+//{
+ // printf("%-25s: %s (%d) alloc_huge_page\n",
+  //  ctime(gettimeofday_s()), execname(), pid())
+//}
+
+//probe kernel.function("alloc_huge_page").return
+//{
+ // printf("%-25s: %s (%d) alloc_huge_page_return\n",
+  //  ctime(gettimeofday_s()), execname(), pid())
+//}
+
+//probe kernel.function("*@mm/page_alloc.c")
+//{
+//  printf("%-25s: %s (%d) (%d)  : page_alloc.c  :%s\n",
+//  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+//}
+
+probe kernel.function("*@mm/mempolicy.c")
+{
+  printf("%-25s: %s (%d) (%d)  : mempolicy.c  :%s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+
+
+/*probe kernel.function("*@mm/hugetlb.c")
+{
+  printf("%-25s: %s (%d) (%d)  : hugetlb.c  :%s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+probe kernel.function("*@mm/huge_memory.c")
+{
+ printf("%-25s: %s (%d) (%d)  : huge_memory.c : %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+
+probe kernel.function("*@mm/mmap.c")
+{
+  printf("%-25s: %s (%d) (%d)  : mmap.c : %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+
+probe kernel.function("*@mm/page_alloc.c")
+{
+  printf("%-25s: %s (%d) (%d)  : page_alloc.c : %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+probe kernel.function("*@mm/compaction.c")
+{
+  printf("%-25s: %s (%d) (%d)  : compaction.c : %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+probe kernel.function("*@mm/memory-failure.c")
+{
+  printf("%-25s: %s (%d) (%d)  : memory-failure.c : %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}
+
+probe kernel.function("*@mm/migrate.c")
+{
+  printf("%-25s: %s (%d) (%d)  : migrate.c: %s\n",
+  ctime(gettimeofday_s()), execname(), pid(), tid(), probefunc())
+}*/
